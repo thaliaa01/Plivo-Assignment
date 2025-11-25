@@ -1,6 +1,9 @@
-# PII NER Assignment Skeleton
+# PII NER Assignment
 
-This repo is a skeleton for a token-level NER model that tags PII in STT-style transcripts.
+This repository implements a token-level Named Entity Recognition (NER) model that detects and classifies PII entities in noisy speech-to-text (STT) transcripts.
+The model assigns BIO tags token-wise, converts them to character spans, and marks each detected entity as **PII** or **non-PII** based on the assignment rules.
+
+---
 
 ## Setup
 
@@ -8,15 +11,23 @@ This repo is a skeleton for a token-level NER model that tags PII in STT-style t
 pip install -r requirements.txt
 ```
 
+(Optional) Create a virtual environment before installing dependencies.
+
+---
+
 ## Train
 
 ```bash
 python src/train.py \
-  --model_name distilbert-base-uncased \
+  --model_name distilbert-base-cased \
   --train data/train.jsonl \
   --dev data/dev.jsonl \
   --out_dir out
 ```
+
+This will train the model and save the trained weights + tokenizer into the `out/` directory.
+
+---
 
 ## Predict
 
@@ -27,26 +38,40 @@ python src/predict.py \
   --output out/dev_pred.json
 ```
 
+This generates predictions in the required JSON output format.
+
+---
+
 ## Evaluate
 
+### Dev set
+
 ```bash
-# Dev set
 python src/eval_span_f1.py \
   --gold data/dev.jsonl \
   --pred out/dev_pred.json
+```
 
-# (Optional) stress test set
+### (Optional) Stress test set
+
+```bash
 python src/predict.py \
   --model_dir out \
   --input data/stress.jsonl \
   --output out/stress_pred.json
+```
 
+```bash
 python src/eval_span_f1.py \
   --gold data/stress.jsonl \
   --pred out/stress_pred.json
 ```
 
-## Measure latency
+This reports span-level metrics including precision, recall, F1-score per entity, macro-F1, and PII-only vs non-PII evaluation.
+
+---
+
+## Measure Latency
 
 ```bash
 python src/measure_latency.py \
@@ -55,4 +80,31 @@ python src/measure_latency.py \
   --runs 50
 ```
 
-Your task in the assignment is to modify the model and training code to improve entity and PII detection quality while keeping **p95 latency below ~20 ms** per utterance (batch size 1, on a reasonably modern CPU).
+Latency is evaluated per single-utterance prediction at batch size = 1. Metrics include mean, p50, and p95 inference time.
+
+---
+
+## (Optional) Synthetic Dataset Generation
+
+```bash
+python dataset_generator.py
+```
+
+This regenerates `train.jsonl` and `dev.jsonl` with synthetic, noisy STT-style labeled examples.
+
+---
+
+## Output Format Example
+
+```json
+{
+  "utt_0012": [
+    { "start": 3, "end": 19, "label": "CREDIT_CARD", "pii": true },
+    { "start": 63, "end": 77, "label": "PERSON_NAME", "pii": true },
+    { "start": 81, "end": 105, "label": "EMAIL", "pii": true }
+  ]
+}
+
+
+
+
