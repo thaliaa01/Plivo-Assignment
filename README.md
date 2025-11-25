@@ -87,7 +87,7 @@ Latency is evaluated per single-utterance prediction at batch size = 1. Metrics 
 ## (Optional) Synthetic Dataset Generation
 
 ```bash
-python dataset_generator.py
+python dataset_augment.py
 ```
 
 This regenerates `train.jsonl` and `dev.jsonl` with synthetic, noisy STT-style labeled examples.
